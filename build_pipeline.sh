@@ -120,7 +120,7 @@ function generate_version_tag()
 
     case $release_choice in
       s)
-        local_tag=$( echo $latest_tag | sed 's/\(.*\)b[0-9]/\1/g')${beta_version}
+        local_tag=$( echo $latest_tag | sed 's/\(.*\)b[0-9]/\1/g')
         echo -e  "\033[1mMoving to a stable release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
         ;;
       i)
