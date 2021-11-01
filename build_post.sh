@@ -5,17 +5,15 @@ source ./logging.sh
 
 function help() 
 {
-  echo "Build new pipeline Docker image and document the process"
+  echo "Build a new post-processing Docker image and document the process"
   echo 
-  echo "Usage: build_pipeline.sh [OPTIONS]"
+  echo "Usage: build_post.sh [OPTIONS]"
   echo
   echo "Available options:"
   echo "-h	print this message"
   echo "-d	dockerfile"
-  echo "-c	Cheetah branch to use"
-  echo "-a	AstroAccelerate branch to use"
-  echo "-t	pipeline version tag"
-  echo "-n  build notes"
+  echo "-b	post-processing branch to use"
+  echo "-t	post-processing version tag"
   echo "-f  force the tag"
   echo
   exit 0
@@ -26,8 +24,7 @@ function print_config()
   echo
   INFO "### Build configuration ###"
   echo "Dockerfile: ${dockerfile}"
-  echo "Cheetah branch: ${cheetah_branch}"
-  echo "AstroAccelerate branch: ${aa_branch}"
+  echo "Post-processing branch: ${post_branch}"
   echo "Version tag: ${version_tag}"
   if [[ -n $notes ]]
   then
@@ -36,7 +33,7 @@ function print_config()
   echo
 }
 
-optstring=":hd:c:a:t:n:f"
+optstring=":hd:b:t:n:f"
 force=false
 
 while getopts ${optstring} arg
@@ -48,11 +45,8 @@ do
     d)
       dockerfile=${OPTARG}
       ;;
-    c)
-      cheetah_branch=${OPTARG}
-      ;;
-    a)
-      aa_branch=${OPTARG}
+    b)
+      post_branch=${OPTARG}
       ;;
     t)
       version_tag=${OPTARG}
@@ -71,30 +65,24 @@ do
       ;; 
   esac
 done
-# Get the latest tag of the pipeline Docker image
+# Get the latest tag of the post-processing Docker image
 # Saved into a global variable $latest_tag
-get_latest_tag full-pipeline
+get_latest_tag post-processing
 
 if [[ -z $dockerfile ]]
 then
   WARNING "Dockerfile not set. Will use the default one..."
-  dockerfile="FullPipeline.docker"
+  dockerfile="PostProcessing.docker"
 elif [[ ! -e $dockerfile ]]
 then
   ERROR "Dockerfile does not exist!"
   exit 1
 fi
 
-if [[ -z $cheetah_branch ]]
+if [[ -z $post_branch ]]
 then
-  WARNING "Cheetah branch not set. Will use the default one..."
-  cheetah_branch="dev"
-fi
-
-if [[ -z $aa_branch ]]
-then
-  WARNING "AA branch not set. Will use the default one..."
-  aa_branch="mm_meertrap_test"
+  WARNING "Post-processing branch not set. Will use the default one..."
+  post_branch="test"
 fi
 
 if [[ -z $version_tag ]]
@@ -109,4 +97,4 @@ fi
 
 print_config
 
-docker build -f $dockerfile --no-cache=true --build-arg AA_BRANCH=${aa_branch} --build-arg CHEETAH_BRANCH=${cheetah_branch} -t full-pipeline:${version_tag} . | tee build_log.tmp && echo "$( date ) full-pipeline:${version_tag} ${aa_branch} ${cheetah_branch} ${notes}" >> pipeline_builds.dat
+docker build -f $dockerfile --no-cache=true --build-arg POST_BRANCH=${post_branch} -t post-processing:${version_tag} . | tee build_log.tmp && echo "$( date ) post-processing:${version_tag} ${post_branch} ${notes}" >> post_proc_builds.dat
