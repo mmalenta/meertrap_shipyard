@@ -17,6 +17,7 @@ function check_version_tag()
   # Use regexp to check the tag
 
   local new_tag=$1
+  local force_tag=$2
 
   if [[ $new_tag =~ $BETA_REG ]]
   then
@@ -52,13 +53,24 @@ function check_version_tag()
         echo -e "\033[1;31mProvided tag does not increment the beta release\033[0m"
         echo -e "\033[1mRequested release tag change:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;31m${new_tag}\033[0m"
         echo
-        exit 1
+
+        if [[ $force_tag == true ]]
+        then
+          echo -e "\033[1;33mWill force the use of the provided tag!\033[0m"
+        else
+          exit 1
+        fi
       fi
     else
       echo -e "\033[1;31mProvided tag does not increment the release\033[0m"
       echo -e "\033[1mRequested release tag change:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;31m${new_tag}\033[0m"
       echo
-      exit 1
+      if [[ $force_tag == true ]]
+      then
+        echo -e "\033[1;33mWill force the use of the provided tag!\033[0m"
+      else
+        exit 1
+      fi
     fi
   else
     echo "Provided tag increments the release"

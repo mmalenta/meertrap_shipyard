@@ -17,6 +17,7 @@ function help()
   echo "-c	Cheetah branch to use"
   echo "-a	AstroAccelerate branch to use"
   echo "-t	pipeline version tag"
+  echo "-f  force the tag"
   echo
   exit 0
 }
@@ -40,6 +41,8 @@ echo "Building image full-pipeline:${version_tag} using Cheetah branch ${cheetah
 
 optstring=":hd:c:a:t:n:f"
 
+force=false
+
 while getopts ${optstring} arg
 do
   case ${arg} in
@@ -60,6 +63,10 @@ do
       ;;
     n)
       notes=${OPTARG}
+      ;;
+    f) 
+      force=true
+      echo -e "\033[1mWill force build with the provided tag!!\033[0m"
       ;;
     ?)
       echo "Invalid option -${OPTARG}"
@@ -99,7 +106,7 @@ then
   # Follow PEP440 limited to just beta and stable releases
   generate_version_tag
 else
-  check_version_tag $version_tag
+  check_version_tag $version_tag $force
 fi
 
 print_config
