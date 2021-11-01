@@ -14,6 +14,7 @@ function help()
   echo "-d	dockerfile"
   echo "-b	post-processing branch to use"
   echo "-t	post-processing version tag"
+  echo "-n  build notes"
   echo "-f  force the tag"
   echo
   exit 0
