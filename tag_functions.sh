@@ -1,3 +1,6 @@
+BETA_REG="^[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$"
+STABLE_REG="^[0-9]+\.[0-9]+\.[0-9]+$"
+
 function get_latest_tag() 
 {
   # Check for the latest tag

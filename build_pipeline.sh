@@ -2,12 +2,9 @@
 
 source ./tag_functions.sh
 
-BETA_REG="^[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$"
-STABLE_REG="^[0-9]+\.[0-9]+\.[0-9]+$"
-
 function help() 
 {
-  echo "Build a new Docker image and document the process"
+  echo "Build new pipeline Docker image and document the process"
   echo 
   echo "Usage: build_pipeline.sh [OPTIONS]"
   echo
