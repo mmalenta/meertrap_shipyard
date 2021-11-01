@@ -1,3 +1,7 @@
+#!/bin/bash
+
+source ./logging.sh
+
 BETA_REG="^[0-9]+\.[0-9]+\.[0-9]+b[0-9]+$"
 STABLE_REG="^[0-9]+\.[0-9]+\.[0-9]+$"
 
@@ -29,7 +33,7 @@ function check_version_tag()
   then
     echo
   else
-    echo -e "\033[1;31mNon-conforming tag provided!\033[0m"
+    ERROR "Non-conforming tag provided!"
 
     echo "Tags have to adhere to the following convention:"
     echo "Stable release 0.[minor].[micro]"
@@ -51,33 +55,33 @@ function check_version_tag()
       if [[ $new_tag == $( echo $latest_tag | sed 's/\(.*\)b[0-9]/\1/g') ]]
       then
         echo "Provided tag moves from beta to the stable release"
-        echo -e "\033[1mRequested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;32m${new_tag}\033[0m"
+        INFO "Requested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;32m${new_tag}\033[0m"
       else
-        echo -e "\033[1;31mProvided tag does not increment the beta release\033[0m"
-        echo -e "\033[1mRequested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;31m${new_tag}\033[0m"
+        ERROR "Provided tag does not increment the beta release"
+        INFO "Requested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;31m${new_tag}\033[0m"
         echo
 
         if [[ $force_tag == true ]]
         then
-          echo -e "\033[1;33mWill force the use of the provided tag!\033[0m"
+         WARNING "Will force the use of the provided tag!"
         else
           exit 1
         fi
       fi
     else
-      echo -e "\033[1;31mProvided tag does not increment the release\033[0m"
-      echo -e "\033[1mRequested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;31m${new_tag}\033[0m"
+      ERROR "Provided tag does not increment the release"
+      INFO "Requested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;31m${new_tag}\033[0m"
       echo
       if [[ $force_tag == true ]]
       then
-        echo -e "\033[1;33mWill force the use of the provided tag!\033[0m"
+        WARNING "Will force the use of the provided tag!"
       else
         exit 1
       fi
     fi
   else
     echo "Provided tag increments the release"
-    echo -e "\033[1mRequested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;32m${new_tag}\033[0m"
+    INFO "Requested release tag change:\033[0m \033[1;34m${latest_tag}\033[0m -> \033[1;32m${new_tag}\033[0m"
   fi
 
   if [[ $major -gt 0 ]]
@@ -101,15 +105,15 @@ function generate_version_tag()
     case $release_choice in
       s)
         local_tag=$( echo $latest_tag | sed 's/\(.*\)b[0-9]/\1/g')
-        echo -e  "\033[1mMoving to a stable release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
+        INFO "Moving to a stable release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
         ;;
       i)
         local beta_version=$(( $(echo $latest_tag | sed 's/.*b\([0-9]*\)/\1/g' ) + 1 ))
         local_tag=$( echo $latest_tag | sed 's/\(.*b\)[0-9]/\1/g')${beta_version}
-        echo -e  "\033[1mIncrementing the beta release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
+        INFO  "Incrementing the beta release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
         ;;
       *)
-        echo -e "\033[1;31mInvalid option\033[0m"
+        ERROR "Invalid option!"
         exit 1
         ;;
     esac
@@ -131,18 +135,18 @@ function generate_version_tag()
 
         if [[ $micro -eq 20 ]]
         then
-          echo -e "\033[1;33mMaximum micro version reached!\033[0m"
-          echo -e "\033[1;33mWill increment the minor version!\033[0m"
+          WARNING "Maximum micro version reached!"
+          WARNING "Will increment the minor version!"
           local minor=$(( $( echo $latest_tag | awk -F '.' '{print $2}' ) + 1 ))
           local_tag="0.${minor}.0"
-          echo -e  "\033[1mIncrementing the minor release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
+          INFO "Incrementing the minor release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
         else
           local_tag=$( echo $latest_tag | sed -r 's/(^[0-9]+.[0-9]+.).*$/\1/g' )${micro}
-          echo -e  "\033[1mIncrementing the micro release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
+          INFO "Incrementing the micro release tag:\033[0m \033[1;33m${latest_tag}\033[0m -> \033[1;32m${local_tag}\033[0m"
         fi
         ;;
       *)
-        echo -e "\033[1;31mInvalid option\033[0m"
+        ERROR "Invalid option!"
         echo
         exit 1
         ;;
@@ -151,11 +155,11 @@ function generate_version_tag()
   else
     if [[ -z $latest_tag ]]
     then
-      echo -e "\033[1;31mDid not find the pipeline image at all\033[0m"
+      ERROR "Did not find the pipeline image at all!"
       echo
       exit 1
     else
-      echo -e "\033[1;31mLatest image tag not recognised\033[0m"
+      ERROR "Latest image tag not recognised!"
       echo
       exit 1
     fi

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source ./tag_functions.sh
+source ./logging.sh
 
 function help() 
 {
@@ -14,6 +15,7 @@ function help()
   echo "-c	Cheetah branch to use"
   echo "-a	AstroAccelerate branch to use"
   echo "-t	pipeline version tag"
+  echo "-n  build notes"
   echo "-f  force the tag"
   echo
   exit 0
@@ -22,7 +24,7 @@ function help()
 function print_config()
 {
   echo
-  echo -e "\033[1m### Build configuration ###\033[0m"
+  INFO "### Build configuration ###"
   echo "Dockerfile: ${dockerfile}"
   echo "Cheetah branch: ${cheetah_branch}"
   echo "AstroAccelerate branch: ${aa_branch}"
@@ -34,10 +36,7 @@ function print_config()
   echo
 }
 
-echo "Building image full-pipeline:${version_tag} using Cheetah branch ${cheetah_branch}"
-
 optstring=":hd:c:a:t:n:f"
-
 force=false
 
 while getopts ${optstring} arg
@@ -63,43 +62,44 @@ do
       ;;
     f) 
       force=true
-      echo -e "\033[1mWill force build with the provided tag!!\033[0m"
+      INFO "Will force build with the provided tag!"
       ;;
     ?)
-      echo "Invalid option -${OPTARG}"
+      ERROR "Invalid option -${OPTARG}"
       help
       exit 2
       ;; 
   esac
 done
-
+# Get the latest tag of the pipeline Docker image
+# Saved into a globa lvariable $latest_tag
 get_latest_tag full-pipeline
 
 if [[ -z $dockerfile ]]
 then
-  echo "Dockerfile not set. Will use the default one..."
+  WARNING "Dockerfile not set. Will use the default one..."
   dockerfile="FullPipeline.docker"
 elif [[ ! -e $dockerfile ]]
 then
-  echo -e "\033[1;31mDockerfile does not exist!\033[0m"
+  ERROR "Dockerfile does not exist!"
   exit 1
 fi
 
 if [[ -z $cheetah_branch ]]
 then
-  echo "Cheetah branch not set. Will use the default one..."
+  WARNING "Cheetah branch not set. Will use the default one..."
   cheetah_branch="dev"
 fi
 
 if [[ -z $aa_branch ]]
 then
-  echo "AA branch not set. Will use the default one..."
+  WARNING "AA branch not set. Will use the default one..."
   aa_branch="mm_meertrap_test"
 fi
 
 if [[ -z $version_tag ]]
 then
-  echo "Version tag not set. Will generate one..."
+  WARNING "Version tag not set. Will generate one..."
   # Follow PEP440 limited to just beta and stable releases
   generate_version_tag
 else
