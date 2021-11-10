@@ -36,6 +36,35 @@ function print_config()
   echo
 }
 
+function store_build_info()
+{
+  local repos=("spead2" "psrdada" "astro-accelerate" "panda" "cheetah" "psrdada_cpp" "mkrecv")
+
+  local build_info="$( date ),full-pipeline:${version_tag},${aa_branch},${cheetah_branch}"
+
+  for repo in ${repos[@]}
+  do
+    clone_line=$( grep -n "Cloning into '${repo}'" build_log.tmp | awk -F ':' '{print $1}' )
+
+    if [ ! -z $clone_line ]
+    then
+      # There are leftover escape characters
+      commit_sha=$( tail -n +${clone_line} build_log.tmp | grep -m 1 -E "^commit|0mcommit" | awk -F ' ' '{print $2}' )
+      INFO "Found ${repo} git SHA: ${commit_sha}"
+      build_info="${build_info},${commit_sha}"
+
+    else
+      WARNING "Did not find ${repo} git SHA!"
+      build_info="${build_info},"
+    fi
+
+  done
+
+  build_info="${build_info},\"${notes}\""
+  echo "Saving build information..."
+  echo $build_info >> pipeline_builds.dat
+}
+
 optstring=":hd:c:a:t:n:f"
 force=false
 
@@ -109,4 +138,6 @@ fi
 
 print_config
 
-docker build -f $dockerfile --no-cache=true --build-arg AA_BRANCH=${aa_branch} --build-arg CHEETAH_BRANCH=${cheetah_branch} -t full-pipeline:${version_tag} . | tee build_log.tmp && echo "$( date ) full-pipeline:${version_tag} ${aa_branch} ${cheetah_branch} ${notes}" >> pipeline_builds.dat
+docker build -f $dockerfile --no-cache=true --build-arg AA_BRANCH=${aa_branch} --build-arg CHEETAH_BRANCH=${cheetah_branch} -t full-pipeline:${version_tag} . | tee build_log.tmp && store_build_info
+
+echo 
